@@ -54,9 +54,6 @@ RUN --mount=type=secret,id=GITHUB_TOKEN,mode=0444,required=true \
 COPY ./requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /tmp/requirements.txt
 
-RUN --mount=type=secret,id=HF_TOKEN,mode=0444,required=true \
-    huggingface-cli login --token=$(cat /run/secrets/HF_TOKEN)
-
 COPY --chown=1000 . ${HOME}/app
 ENV PYTHONPATH=${HOME}/app \
     PYTHONUNBUFFERED=1 \
