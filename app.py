@@ -409,4 +409,4 @@ with gr.Blocks(css="style.css") as demo:
         outputs=[output_audio, output_text],
         api_name="run",
     )
-demo.queue(max_size=50).launch()
+demo.queue(max_size=50).launch(share=True)
