@@ -1,5 +1,6 @@
 import os
 
+from typing import Union
 import gradio as gr
 import numpy as np
 import torch
@@ -48,12 +49,12 @@ translator = Translator(
 def predict(
     task_name: str,
     audio_source: str,
-    input_audio_mic: str | None,
-    input_audio_file: str | None,
-    input_text: str | None,
-    source_language: str | None,
+    input_audio_mic: Union[str, None],
+    input_audio_file: Union[str, None],
+    input_text: Union[str, None],
+    source_language: Union[str, None],
     target_language: str,
-) -> tuple[tuple[int, np.ndarray] | None, str]:
+) -> tuple[Union[tuple[int, np.ndarray], None], str]:
     task_name = task_name.split()[0]
     source_language_code = LANGUAGE_NAME_TO_CODE.get(source_language, None)
     target_language_code = LANGUAGE_NAME_TO_CODE[target_language]
@@ -290,6 +291,8 @@ with gr.Blocks(css="style.css") as demo:
             examples=[
                 ["assets/sample_input.mp3", "French"],
                 ["assets/sample_input.mp3", "Mandarin Chinese"],
+                ["assets/sample_input_2.mp3", "Hindi"],
+                ["assets/sample_input_2.mp3", "Spanish"],
             ],
             inputs=[input_audio_file, target_language],
             outputs=[output_audio, output_text],
@@ -301,6 +304,8 @@ with gr.Blocks(css="style.css") as demo:
             examples=[
                 ["assets/sample_input.mp3", "French"],
                 ["assets/sample_input.mp3", "Mandarin Chinese"],
+                ["assets/sample_input_2.mp3", "Hindi"],
+                ["assets/sample_input_2.mp3", "Spanish"],
             ],
             inputs=[input_audio_file, target_language],
             outputs=[output_audio, output_text],
@@ -312,6 +317,10 @@ with gr.Blocks(css="style.css") as demo:
             examples=[
                 ["My favorite animal is the elephant.", "English", "French"],
                 ["My favorite animal is the elephant.", "English", "Mandarin Chinese"],
+                ["Meta AI's Seamless M4T model is democratising spoken communication across language barriers",
+                 "English", "Hindi"],
+                ["Meta AI's Seamless M4T model is democratising spoken communication across language barriers",
+                 "English", "Spanish"],
             ],
             inputs=[input_text, source_language, target_language],
             outputs=[output_audio, output_text],
@@ -323,6 +332,10 @@ with gr.Blocks(css="style.css") as demo:
             examples=[
                 ["My favorite animal is the elephant.", "English", "French"],
                 ["My favorite animal is the elephant.", "English", "Mandarin Chinese"],
+                ["Meta AI's Seamless M4T model is democratising spoken communication across language barriers",
+                 "English", "Hindi"],
+                ["Meta AI's Seamless M4T model is democratising spoken communication across language barriers",
+                 "English", "Spanish"],
             ],
             inputs=[input_text, source_language, target_language],
             outputs=[output_audio, output_text],
@@ -333,6 +346,7 @@ with gr.Blocks(css="style.css") as demo:
         asr_examples = gr.Examples(
             examples=[
                 ["assets/sample_input.mp3", "English"],
+                ["assets/sample_input_2.mp3", "English"],
             ],
             inputs=[input_audio_file, target_language],
             outputs=[output_audio, output_text],
