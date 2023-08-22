@@ -39,7 +39,7 @@ DEFAULT_TARGET_LANGUAGE = "French"
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 translator = Translator(
-    model_name_or_card="multitask_unity_large",
+    model_name_or_card="seamlessM4T_large",
     vocoder_name_or_card="vocoder_36langs",
     device=device,
     sample_rate=AUDIO_SAMPLE_RATE,
