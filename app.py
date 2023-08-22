@@ -1,4 +1,3 @@
-import json
 import os
 
 import gradio as gr
@@ -7,11 +6,15 @@ import torch
 import torchaudio
 from seamless_communication.models.inference.translator import Translator
 
-DESCRIPTION = "# SeamlessM4T"
+from lang_list import (
+    LANGUAGE_NAME_TO_CODE,
+    S2ST_TARGET_LANGUAGE_NAMES,
+    S2TT_TARGET_LANGUAGE_NAMES,
+    T2TT_TARGET_LANGUAGE_NAMES,
+    TEXT_SOURCE_LANGUAGE_NAMES,
+)
 
-with open("./mlg_config.json", "r") as f:
-    lang_idx_map = json.loads(f.read())
-LANGUAGES = lang_idx_map["multilingual"].keys()
+DESCRIPTION = "# SeamlessM4T"
 
 TASK_NAMES = [
     "S2ST (Speech to Speech translation)",
@@ -23,6 +26,8 @@ TASK_NAMES = [
 
 AUDIO_SAMPLE_RATE = 16000.0
 MAX_INPUT_AUDIO_LENGTH = 60  # in seconds
+
+DEFAULT_TARGET_LANGUAGE = "French"
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 translator = Translator(
@@ -43,6 +48,9 @@ def predict(
     target_language: str,
 ) -> tuple[tuple[int, np.ndarray] | None, str]:
     task_name = task_name.split()[0]
+    source_language_code = LANGUAGE_NAME_TO_CODE[source_language]
+    target_language_code = LANGUAGE_NAME_TO_CODE[target_language]
+
     if task_name in ["S2ST", "S2TT", "ASR"]:
         if audio_source == "microphone":
             input_data = input_audio_mic
@@ -61,8 +69,8 @@ def predict(
     text_out, wav, sr = translator.predict(
         input=input_data,
         task_str=task_name,
-        tgt_lang=target_language,
-        src_lang=source_language,
+        tgt_lang=target_language_code,
+        src_lang=source_language_code,
     )
     if task_name in ["S2ST", "T2ST"]:
         return (sr, wav.cpu().detach().numpy()), text_out
@@ -80,26 +88,50 @@ def update_audio_ui(audio_source: str) -> tuple[dict, dict]:
 
 def update_input_ui(task_name: str) -> tuple[dict, dict, dict, dict]:
     task_name = task_name.split()[0]
-    if task_name in ["S2ST", "S2TT"]:
+    if task_name == "S2ST":
         return (
             gr.update(visible=True),  # audio_box
             gr.update(visible=False),  # input_text
             gr.update(visible=False),  # source_language
-            gr.update(visible=True),  # target_language
+            gr.update(
+                visible=True, choices=S2ST_TARGET_LANGUAGE_NAMES, value=DEFAULT_TARGET_LANGUAGE
+            ),  # target_language
         )
-    elif task_name in ["T2ST", "T2TT"]:
+    elif task_name == "S2TT":
+        return (
+            gr.update(visible=True),  # audio_box
+            gr.update(visible=False),  # input_text
+            gr.update(visible=False),  # source_language
+            gr.update(
+                visible=True, choices=S2TT_TARGET_LANGUAGE_NAMES, value=DEFAULT_TARGET_LANGUAGE
+            ),  # target_language
+        )
+    elif task_name == "T2ST":
         return (
             gr.update(visible=False),  # audio_box
             gr.update(visible=True),  # input_text
             gr.update(visible=True),  # source_language
-            gr.update(visible=True),  # target_language
+            gr.update(
+                visible=True, choices=S2ST_TARGET_LANGUAGE_NAMES, value=DEFAULT_TARGET_LANGUAGE
+            ),  # target_language
+        )
+    elif task_name == "T2TT":
+        return (
+            gr.update(visible=False),  # audio_box
+            gr.update(visible=True),  # input_text
+            gr.update(visible=True),  # source_language
+            gr.update(
+                visible=True, choices=T2TT_TARGET_LANGUAGE_NAMES, value=DEFAULT_TARGET_LANGUAGE
+            ),  # target_language
         )
     elif task_name == "ASR":
         return (
             gr.update(visible=True),  # audio_box
             gr.update(visible=False),  # input_text
             gr.update(visible=False),  # source_language
-            gr.update(visible=True),  # target_language
+            gr.update(
+                visible=True, choices=S2TT_TARGET_LANGUAGE_NAMES, value=DEFAULT_TARGET_LANGUAGE
+            ),  # target_language
         )
     else:
         raise ValueError(f"Unknown task: {task_name}")
@@ -137,14 +169,14 @@ with gr.Blocks(css="style.css") as demo:
         with gr.Row():
             source_language = gr.Dropdown(
                 label="Source language",
-                choices=LANGUAGES,
-                value="eng",
+                choices=TEXT_SOURCE_LANGUAGE_NAMES,
+                value="English",
                 visible=False,
             )
             target_language = gr.Dropdown(
                 label="Target language",
-                choices=LANGUAGES,
-                value="fra",
+                choices=S2ST_TARGET_LANGUAGE_NAMES,
+                value=DEFAULT_TARGET_LANGUAGE,
             )
         with gr.Row() as audio_box:
             audio_source = gr.Radio(
