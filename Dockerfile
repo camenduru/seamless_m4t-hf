@@ -44,8 +44,7 @@ RUN pyenv install ${PYTHON_VERSION} && \
 
 RUN pip install --no-cache-dir torch==2.0.1 gradio==3.40.1 && \
     pip install --extra-index-url https://test.pypi.org/simple/ fairseq2==0.1.0rc0
-RUN --mount=type=secret,id=GITHUB_TOKEN,mode=0444,required=true \
-    git clone https://$(cat /run/secrets/GITHUB_TOKEN)@github.com/fairinternal/seamless_communication && \
+RUN git clone https://github.com/facebookresearch/seamless_communication && \
     cd seamless_communication && \
     pip install . && \
     cd .. && \
