@@ -42,7 +42,7 @@ translator = Translator(
     model_name_or_card="seamlessM4T_large",
     vocoder_name_or_card="vocoder_36langs",
     device=device,
-    sample_rate=AUDIO_SAMPLE_RATE,
+    dtype=None,
 )
 
 
